@@ -19,7 +19,7 @@ exports.up = (knex, Promise) => {
 					table.increments("id"); //.primary();
 					table
 						.integer("carId")
-						.unsigned()
+						//.unsigned()
 						.references("cars.id");
 					// .inTable("cars")
 					// .onDelete("SET NULL")
