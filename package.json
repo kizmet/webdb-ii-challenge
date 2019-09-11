@@ -2,11 +2,23 @@
   "name": "webdb-ii-challenge",
   "version": "1.0.0",
   "description": "Web DB II Module Challenge",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "server": "nodemon index.js"
+    "migrate": "knex migrate:latest",
+    "server": "npm run migrate && nodemon index.js"
   },
   "author": "Lambda School",
+    "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "express-promise-router": "^3.0.1",
+    "knex": "^0.14.6",
+    "lodash": "^4.17.4",
+    "morgan": "^1.9.0",
+    "objection": "^1.4.0",
+    "sqlite3": "^4.0.4"
+  },
   "devDependencies": {
     "nodemon": "^1.19.1"
   }
