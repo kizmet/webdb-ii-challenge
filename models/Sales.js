@@ -1,18 +1,16 @@
 "use strict";
 
 const { Model } = require("objection");
-const Sales = require("./Sales");
 
-class Cars extends Model {
+class Sales extends Model {
   static get tableName() {
-    return "cars";
+    return "sales";
   }
-
   static get relationMappings() {
     return {
-      sales: {
-        relation: Model.HasManyRelation,
-        modelClass: Sales,
+      owner: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: __dirname + "/Cars",
         join: {
           from: "cars.id",
           to: "sales.carId"
@@ -22,4 +20,4 @@ class Cars extends Model {
   }
 }
 
-module.exports = Cars;
+module.exports = Sales;

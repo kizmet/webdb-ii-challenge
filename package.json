@@ -1,18 +1,22 @@
 {
   "name": "webdb-ii-challenge",
   "version": "1.0.0",
-  "description": "Web DB II Module Challenge",
+  "description": "knex using Objection.js",
   "main": "app.js",
   "scripts": {
-    "migrate": "knex migrate:latest",
-    "server": "npm run migrate && nodemon index.js"
+    "migrate": "knex migrate:latest --env development",
+    "server": "npm run migrate && nodemon app"
   },
-  "author": "Lambda School",
-    "dependencies": {
+    "engines": {
+    "node": ">=8.0.0"
+  },
+  "author": "Bryant Patton",
+  "dependencies": {
     "axios": "^0.18.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "express-promise-router": "^3.0.1",
+    "faker": "^4.1.0",
     "knex": "^0.14.6",
     "lodash": "^4.17.4",
     "morgan": "^1.9.0",

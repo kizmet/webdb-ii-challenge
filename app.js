@@ -7,7 +7,6 @@ const knexConfig = require("./knexfile");
 const registerApi = require("./api");
 const { Model } = require("objection");
 
-// Initialize knex.
 const knex = Knex(knexConfig.development);
 
 Model.knex(knex);
@@ -19,14 +18,7 @@ const app = express()
 	.use(router)
 	.set("json spaces", 2);
 
-// Register our REST API.
 registerApi(router);
-
-// Error handling. The `ValidationError` instances thrown by objection.js have a `statusCode`
-// property that is sent as the status code of the response.
-//
-// NOTE: This is not a good error handler, this is the simplest one. See the error handing
-//       recipe for a better handler: http://vincit.github.io/objection.js/#error-handling
 app.use((err, req, res, next) => {
 	if (err) {
 		res.status(err.statusCode || err.status || 500).send(

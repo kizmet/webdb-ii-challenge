@@ -2,66 +2,94 @@
 
 const { transaction } = require("objection");
 const Cars = require("./models/Cars");
+const Sales = require("./models/Sales");
 
 module.exports = router => {
-  // Create a new Cars. Because we use `insertGraph` you can pass relations
-  // with the car and they also get inserted and related to the car. If
-  // all you want to do is insert a single car, `insertGraph` and `allowInsert`
-  // can be replaced by `insert(req.body)`.
+  //get all cars
+  router.get("/cars", async (req, res) => {
+    const cars = await Cars.query()
+      .skipUndefined()
+      .eager(req.query.eager)
+      .where("model", "like", req.query.model)
+      .orderBy("id");
+
+    res.send(cars);
+  });
+  //add a new car
   router.post("/cars", async (req, res) => {
     const graph = req.body;
-
-    // It's a good idea to wrap `insertGraph` call in a transaction since it
-    // may create multiple queries.
     const insertedGraph = await transaction(Cars.knex(), trx => {
-      return (
-        Cars.query(trx)
-          // For security reasons, limit the relations that can be inserted.
-          // .allowInsert("[pets, children.[pets, movies], movies, parent]")
-          .insertGraph(graph)
-      );
+      return Cars.query(trx).insertGraph(graph);
     });
-
     res.send(insertedGraph);
   });
 
-  // Patch a single Cars.
+  //update a car
   router.patch("/cars/:id", async (req, res) => {
     const car = await Cars.query().patchAndFetchById(req.params.id, req.body);
 
     res.send(car);
   });
+  //get a car by id
+  router.get("/cars/:id", async (req, res) => {
+    const car = await Cars.query().findById(req.params.id);
+    //.where("id", "=", req.params.id);
 
-  // Get multiple Carss. The result can be filtered using query parameters
-  // `minAge`, `maxAge` and `firstName`. Relations can be fetched eagerly
-  // by giving a relation expression as the `eager` query parameter.
-  router.get("/cars", async (req, res) => {
-    // We don't need to check for the existence of the query parameters because
-    // we call the `skipUndefined` method. It causes the query builder methods
-    // to do nothing if one of the values is undefined.
-    const cars = await Cars.query()
-      .skipUndefined()
-      // For security reasons, limit the relations that can be fetched.
-      // .allowEager(
-      //   "[pets, parent, children.[pets, movies.actors], movies.actors.pets]"
-      // )
-      // .eager(req.query.eager)
-      // .where("model", "like", req.query.model)
-      .orderBy("model");
-    // Order eagerly loaded pets by name.
-
-    res.send(cars);
+    res.send(car);
   });
 
-  // Delete a car.
+  // Delete a car
   router.delete("/cars/:id", async (req, res) => {
     await Cars.query().deleteById(req.params.id);
 
     res.send({});
   });
+  //get all sales
+  router.get("/sales", async (req, res) => {
+    const sales = await Sales.query()
+      .skipUndefined()
+      .eager(req.query.eager)
+      .where("carId", "like", req.query.model)
+      .orderBy("carId");
+
+    res.send(sales);
+  });
+
+  //get sales per car
+  //http://localhost:8641/cars/9/sales
+  router.get("/cars/:id/sales", async (req, res) => {
+    const car = await Cars.query().findById(req.params.id);
+
+    if (!car) {
+      throw createStatusCodeError(404);
+    }
+    const sales = await car
+      .$relatedQuery("sales")
+      .skipUndefined()
+      .where("name", "like", req.query.name);
+
+    res.send(sales);
+  });
+
+  // Add a sales for a Car.
+  //http://localhost:8641/cars/9/sales
+  //  {"date": "315336736931484.0", "price": 11223333}
+
+  router.post("/cars/:id/sales", async (req, res) => {
+    const sales = await transaction(Cars.knex(), async trx => {
+      const car = await Cars.query(trx).findById(req.params.id);
+
+      if (!car) {
+        throw createStatusCodeError(404);
+      }
+
+      return await car.$relatedQuery("sales", trx).insert(req.body);
+    });
+
+    res.send(sales);
+  });
 };
 
-// The error returned by this function is handled in the error handler middleware in app.js.
 function createStatusCodeError(statusCode) {
   return Object.assign(new Error(), {
     statusCode
